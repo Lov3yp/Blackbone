@@ -258,7 +258,7 @@ PVOID GetSSDTEntry( IN ULONG index )
 /// <returns>Found PTE</returns>
 PMMPTE GetPTEForVA( IN PVOID pAddress )
 {
-    if (dynData.ver >= WINVER_10_RS1)
+    if (dynData.ver >= WINVER_10_1803_RS4)
     {
         // Check if large page
         PMMPTE pPDE = (PMMPTE)(((((ULONG_PTR)pAddress >> PDI_SHIFT) << PTE_SHIFT) & 0x3FFFFFF8ull) + dynData.DYN_PDE_BASE);

@@ -48,7 +48,7 @@ struct _MMVAD_FLAGS
     ULONG NoChange : 1;
     ULONG VadType : 3;
     ULONG Protection : 5;
-    ULONG PreferredNode : 7;
+    ULONG PreferredNode : 6;
     ULONG PageSize : 2;
     ULONG PrivateMemory : 1;
 };
@@ -108,7 +108,7 @@ struct _MM_PRIVATE_VAD_FLAGS
     ULONG NoChange : 1;
     ULONG VadType : 3;
     ULONG Protection : 5;
-    ULONG PreferredNode : 7;
+    ULONG PreferredNode : 6;
     ULONG PageSize : 2;
     ULONG PrivateMemoryAlwaysSet : 1;
     ULONG WriteWatch : 1;
@@ -128,7 +128,7 @@ struct _MM_GRAPHICS_VAD_FLAGS
     ULONG NoChange : 1;
     ULONG VadType : 3;
     ULONG Protection : 5;
-    ULONG PreferredNode : 7;
+    ULONG PreferredNode : 6;
     ULONG PageSize : 2;
     ULONG PrivateMemoryAlwaysSet : 1;
     ULONG WriteWatch : 1;
@@ -148,11 +148,11 @@ struct _MM_SHARED_VAD_FLAGS
     ULONG NoChange : 1;
     ULONG VadType : 3;
     ULONG Protection : 5;
-    ULONG PreferredNode : 7;
+    ULONG PreferredNode : 6;
     ULONG PageSize : 2;
     ULONG PrivateMemoryAlwaysClear : 1;
     ULONG PrivateFixup : 1;
-    ULONG HotPatchState : 2;
+    ULONG HotPatchAllowed : 1;
 };
 
 typedef struct _MMVAD_SHORT
@@ -162,37 +162,33 @@ typedef struct _MMVAD_SHORT
         struct
         {
             struct _MMVAD_SHORT* NextVad;
-            VOID* ExtraCreateInfo;
+            VOID* ExtraCreateInfo;                                          
         };
         struct _RTL_BALANCED_NODE VadNode;
     };
-    ULONG StartingVpn;
-    ULONG EndingVpn;
-    UCHAR StartingVpnHigh;
-    UCHAR EndingVpnHigh;
-    UCHAR CommitChargeHigh;
-    UCHAR SpareNT64VadUChar;
-    LONG ReferenceCount;
-    struct _EX_PUSH_LOCK PushLock;
+    ULONG StartingVpn;                                                      
+    ULONG EndingVpn;                                                       
+    UCHAR StartingVpnHigh;                                                  
+    UCHAR EndingVpnHigh;                                                  
+    UCHAR CommitChargeHigh;                                                 
+    UCHAR SpareNT64VadUChar;                                                
+    LONG ReferenceCount;                                                   
+    struct _EX_PUSH_LOCK PushLock;                                        
     union
     {
-        ULONG LongFlags;
-        struct _MMVAD_FLAGS VadFlags;
-        struct _MM_PRIVATE_VAD_FLAGS PrivateVadFlags;
-        struct _MM_GRAPHICS_VAD_FLAGS GraphicsVadFlags;
-        struct _MM_SHARED_VAD_FLAGS SharedVadFlags;
-        volatile ULONG VolatileVadLong;
-    } u;
+        ULONG LongFlags;                                                  
+        struct _MMVAD_FLAGS VadFlags;                                       
+        struct _MM_PRIVATE_VAD_FLAGS PrivateVadFlags;                      
+        struct _MM_GRAPHICS_VAD_FLAGS GraphicsVadFlags;                    
+        struct _MM_SHARED_VAD_FLAGS SharedVadFlags;                         
+        volatile ULONG VolatileVadLong;                                  
+    } u;                                                                  
     union
     {
-        ULONG LongFlags1;
-        struct _MMVAD_FLAGS1 VadFlags1;
-    } u1;
-    union
-    {
-        ULONGLONG EventListULongPtr;
-        UCHAR StartingVpnHigher : 4;
-    } u5;
+        ULONG LongFlags1;                                                  
+        struct _MMVAD_FLAGS1 VadFlags1;                                    
+    } u1;                                                                 
+    struct _MI_VAD_EVENT_BLOCK* EventList;                                
 } MMVAD_SHORT, * PMMVAD_SHORT;
 
 
@@ -201,19 +197,19 @@ typedef struct _MMVAD
     struct _MMVAD_SHORT Core;
     union
     {
-        ULONG LongFlags2;
-        volatile struct _MMVAD_FLAGS2 VadFlags2;
-    } u2;
-    struct _SUBSECTION* Subsection;
-    struct _MMPTE* FirstPrototypePte;
-    struct _MMPTE* LastContiguousPte;
-    struct _LIST_ENTRY ViewLinks;
-    struct _EPROCESS* VadsProcess;
+        ULONG LongFlags2;                                                 
+        volatile struct _MMVAD_FLAGS2 VadFlags2;                           
+    } u2;                                                                  
+    struct _SUBSECTION* Subsection;                                        
+    struct _MMPTE* FirstPrototypePte;                                      
+    struct _MMPTE* LastContiguousPte;                                     
+    struct _LIST_ENTRY ViewLinks;                                         
+    struct _EPROCESS* VadsProcess;                                         
     union
     {
-        struct _MI_VAD_SEQUENTIAL_INFO SequentialVa;
-        struct _MMEXTEND_INFO* ExtendedInfo;
-    } u4;
+        struct _MI_VAD_SEQUENTIAL_INFO SequentialVa;                       
+        struct _MMEXTEND_INFO* ExtendedInfo;                              
+    } u4;                                                                   
     struct _FILE_OBJECT* FileObject;
 } MMVAD, * PMMVAD;
 #pragma pack(pop)

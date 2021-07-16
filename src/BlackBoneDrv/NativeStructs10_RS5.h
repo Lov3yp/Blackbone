@@ -42,15 +42,22 @@ struct _EX_PUSH_LOCK
 
 struct _MMVAD_FLAGS
 {
-    ULONG Lock : 1;
-    ULONG LockContended : 1;
-    ULONG DeleteInProgress : 1;
-    ULONG NoChange : 1;
     ULONG VadType : 3;
     ULONG Protection : 5;
-    ULONG PreferredNode : 7;
-    ULONG PageSize : 2;
+    ULONG PreferredNode : 6;
     ULONG PrivateMemory : 1;
+    ULONG PrivateFixup : 1;
+    ULONG Graphics : 1;
+    ULONG Enclave : 1;
+    ULONG PageSize64K : 1;
+    ULONG ShadowStack : 1;
+    ULONG Spare : 6;
+    ULONG HotPatchAllowed : 1;
+    ULONG NoChange : 1;
+    ULONG ManySubsections : 1;
+    ULONG DeleteInProgress : 1;
+    ULONG LockContended : 1;
+    ULONG Lock : 1;
 };
 
 struct _MMVAD_FLAGS1
@@ -100,61 +107,6 @@ union ___unnamed2048
     struct _MMEXTEND_INFO* ExtendedInfo;
 };
 
-struct _MM_PRIVATE_VAD_FLAGS
-{
-    ULONG Lock : 1;
-    ULONG LockContended : 1;
-    ULONG DeleteInProgress : 1;
-    ULONG NoChange : 1;
-    ULONG VadType : 3;
-    ULONG Protection : 5;
-    ULONG PreferredNode : 7;
-    ULONG PageSize : 2;
-    ULONG PrivateMemoryAlwaysSet : 1;
-    ULONG WriteWatch : 1;
-    ULONG FixedLargePageSize : 1;
-    ULONG ZeroFillPagesOptional : 1;
-    ULONG Graphics : 1;
-    ULONG Enclave : 1;
-    ULONG ShadowStack : 1;
-    ULONG PhysicalMemoryPfnsReferenced : 1;
-};
-
-struct _MM_GRAPHICS_VAD_FLAGS
-{
-    ULONG Lock : 1;
-    ULONG LockContended : 1;
-    ULONG DeleteInProgress : 1;
-    ULONG NoChange : 1;
-    ULONG VadType : 3;
-    ULONG Protection : 5;
-    ULONG PreferredNode : 7;
-    ULONG PageSize : 2;
-    ULONG PrivateMemoryAlwaysSet : 1;
-    ULONG WriteWatch : 1;
-    ULONG FixedLargePageSize : 1;
-    ULONG ZeroFillPagesOptional : 1;
-    ULONG GraphicsAlwaysSet : 1;
-    ULONG GraphicsUseCoherentBus : 1;
-    ULONG GraphicsNoCache : 1;
-    ULONG GraphicsPageProtection : 3;
-};
-
-struct _MM_SHARED_VAD_FLAGS
-{
-    ULONG Lock : 1;
-    ULONG LockContended : 1;
-    ULONG DeleteInProgress : 1;
-    ULONG NoChange : 1;
-    ULONG VadType : 3;
-    ULONG Protection : 5;
-    ULONG PreferredNode : 7;
-    ULONG PageSize : 2;
-    ULONG PrivateMemoryAlwaysClear : 1;
-    ULONG PrivateFixup : 1;
-    ULONG HotPatchState : 2;
-};
-
 typedef struct _MMVAD_SHORT
 {
     union
@@ -162,37 +114,30 @@ typedef struct _MMVAD_SHORT
         struct
         {
             struct _MMVAD_SHORT* NextVad;
-            VOID* ExtraCreateInfo;
+            VOID* ExtraCreateInfo;                                    
         };
         struct _RTL_BALANCED_NODE VadNode;
     };
-    ULONG StartingVpn;
-    ULONG EndingVpn;
-    UCHAR StartingVpnHigh;
-    UCHAR EndingVpnHigh;
-    UCHAR CommitChargeHigh;
-    UCHAR SpareNT64VadUChar;
-    LONG ReferenceCount;
-    struct _EX_PUSH_LOCK PushLock;
+    ULONG StartingVpn;                                                      
+    ULONG EndingVpn;                                                    
+    UCHAR StartingVpnHigh;                                                
+    UCHAR EndingVpnHigh;                                                   
+    UCHAR CommitChargeHigh;                                              
+    UCHAR SpareNT64VadUChar;                                               
+    LONG ReferenceCount;                                                 
+    struct _EX_PUSH_LOCK PushLock;                                      
     union
     {
-        ULONG LongFlags;
-        struct _MMVAD_FLAGS VadFlags;
-        struct _MM_PRIVATE_VAD_FLAGS PrivateVadFlags;
-        struct _MM_GRAPHICS_VAD_FLAGS GraphicsVadFlags;
-        struct _MM_SHARED_VAD_FLAGS SharedVadFlags;
-        volatile ULONG VolatileVadLong;
-    } u;
+        ULONG LongFlags;                                                    
+        struct _MMVAD_FLAGS VadFlags;                                       
+        volatile ULONG VolatileVadLong;                                     
+    } u;                                                                    
     union
     {
-        ULONG LongFlags1;
-        struct _MMVAD_FLAGS1 VadFlags1;
-    } u1;
-    union
-    {
-        ULONGLONG EventListULongPtr;
-        UCHAR StartingVpnHigher : 4;
-    } u5;
+        ULONG LongFlags1;                                                   
+        struct _MMVAD_FLAGS1 VadFlags1;                                    
+    } u1;                                                               
+    struct _MI_VAD_EVENT_BLOCK* EventList;
 } MMVAD_SHORT, * PMMVAD_SHORT;
 
 
@@ -201,19 +146,19 @@ typedef struct _MMVAD
     struct _MMVAD_SHORT Core;
     union
     {
-        ULONG LongFlags2;
-        volatile struct _MMVAD_FLAGS2 VadFlags2;
-    } u2;
-    struct _SUBSECTION* Subsection;
-    struct _MMPTE* FirstPrototypePte;
-    struct _MMPTE* LastContiguousPte;
-    struct _LIST_ENTRY ViewLinks;
-    struct _EPROCESS* VadsProcess;
+        ULONG LongFlags2;                                                 
+        volatile struct _MMVAD_FLAGS2 VadFlags2;                          
+    } u2;                                                                   
+    struct _SUBSECTION* Subsection;                                         
+    struct _MMPTE* FirstPrototypePte;                                       
+    struct _MMPTE* LastContiguousPte;                                       
+    struct _LIST_ENTRY ViewLinks;                                          
+    struct _EPROCESS* VadsProcess;                                          
     union
     {
-        struct _MI_VAD_SEQUENTIAL_INFO SequentialVa;
-        struct _MMEXTEND_INFO* ExtendedInfo;
-    } u4;
+        struct _MI_VAD_SEQUENTIAL_INFO SequentialVa;                       
+        struct _MMEXTEND_INFO* ExtendedInfo;                                
+    } u4;                                                                  
     struct _FILE_OBJECT* FileObject;
 } MMVAD, * PMMVAD;
 #pragma pack(pop)

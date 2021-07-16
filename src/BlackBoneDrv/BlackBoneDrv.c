@@ -259,19 +259,8 @@ NTSTATUS BBInitDynamicData( IN OUT PDYNAMIC_DATA pData )
 
         // Validate current driver version
         pData->correctBuild = TRUE;
-#if defined(_WIN7_)
-        if (ver_short != WINVER_7 && ver_short != WINVER_7_SP1)
+        if (ver_short < 0x0A00 || WINVER_11_2109_21H2 < ver_short)
             return STATUS_NOT_SUPPORTED;
-#elif defined(_WIN8_)
-        if (ver_short != WINVER_8)
-            return STATUS_NOT_SUPPORTED;
-#elif defined (_WIN81_)
-        if (ver_short != WINVER_81)
-            return STATUS_NOT_SUPPORTED;
-#elif defined (_WIN10_)
-        if (ver_short < WINVER_10 || WINVER_10_20H1 < ver_short)
-            return STATUS_NOT_SUPPORTED;
-#endif
 
         DPRINT( 
             "BlackBone: OS version %d.%d.%d.%d.%d - 0x%x\n",
@@ -285,209 +274,132 @@ NTSTATUS BBInitDynamicData( IN OUT PDYNAMIC_DATA pData )
 
         switch (ver_short)
         {
-                // Windows 7
-                // Windows 7 SP1
-            case WINVER_7:
-            case WINVER_7_SP1:
-                pData->KExecOpt           = 0x0D2;
-                pData->Protection         = 0x43C;  // Bitfield, bit index - 0xB
-                pData->ObjTable           = 0x200;
-                pData->VadRoot            = 0x448;
-                pData->NtProtectIndex     = 0x04D;
-                pData->NtCreateThdExIndex = 0x0A5;
-                pData->NtTermThdIndex     = 0x50;
-                pData->PrevMode           = 0x1F6;
-                pData->ExitStatus         = 0x380;
-                pData->MiAllocPage        = (ver_short == WINVER_7_SP1) ? 0 : 0;
-                if (ver_short == WINVER_7_SP1)
-                {
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x8D\x56\x20\x48\x8B\x42\x08", 0xCC, 8, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x36;
-                }
-                else
-                    pData->ExRemoveTable = 0x32D404;
+        case 0x0A00:
+            if (verInfo.dwBuildNumber == 17134)
+            {
+                pData->ver = WINVER_10_1803_RS4;
+                pData->KExecOpt = 0x1BF;
+                pData->Protection = 0x6CA;
+                pData->EProcessFlags2 = 0x828;
+                pData->ObjTable = 0x418;
+                pData->VadRoot = 0x628;
+                pData->NtCreateThdExIndex = 0xBB;
+                pData->NtTermThdIndex = 0x53;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x700;
+                pData->MiAllocPage = 0;
+                if (NT_SUCCESS(BBScanSection("PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable)))
+                    pData->ExRemoveTable -= 0x34;
                 break;
-
-                // Windows 8
-            case WINVER_8:
-                pData->KExecOpt           = 0x1B7;
-                pData->Protection         = 0x648;
-                pData->ObjTable           = 0x408;
-                pData->VadRoot            = 0x590;
-                pData->NtProtectIndex     = 0x04E;
-                pData->NtCreateThdExIndex = 0x0AF;
-                pData->NtTermThdIndex     = 0x51;
-                pData->PrevMode           = 0x232;
-                pData->ExitStatus         = 0x450;
-                pData->MiAllocPage        = 0x3AF374;
-                pData->ExRemoveTable      = 0x487518;
+            }
+            else if (verInfo.dwBuildNumber == 17763)
+            {
+                pData->ver = WINVER_10_1809_RS5;
+                pData->KExecOpt = 0x1BF;
+                pData->Protection = 0x6CA;
+                pData->EProcessFlags2 = 0x820;
+                pData->ObjTable = 0x418;
+                pData->VadRoot = 0x628;
+                pData->NtCreateThdExIndex = 0xBC;
+                pData->NtTermThdIndex = 0x53;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x700;
+                pData->MiAllocPage = 0;
+                if (NT_SUCCESS(BBScanSection("PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable)))
+                    pData->ExRemoveTable -= 0x34;
                 break;
-
-                // Windows 8.1
-            case WINVER_81:
-                pData->KExecOpt           = 0x1B7;
-                pData->Protection         = 0x67A;
-                pData->EProcessFlags2     = 0x2F8;
-                pData->ObjTable           = 0x408;
-                pData->VadRoot            = 0x5D8;
-                pData->NtCreateThdExIndex = 0xB0;
-                pData->NtTermThdIndex     = 0x52;
-                pData->PrevMode           = 0x232;
-                pData->ExitStatus         = 0x6D8;
-                pData->MiAllocPage        = 0;
-                pData->ExRemoveTable      = 0x432A88; // 0x38E320;
-                if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x8D\x7D\x18\x48\x8B", 0xCC, 6, (PVOID)&pData->ExRemoveTable ) ))
-                    pData->ExRemoveTable -= 0x5E;
+            }
+            else if (verInfo.dwBuildNumber == 18362 || verInfo.dwBuildNumber == 18363)
+            {
+                pData->ver = verInfo.dwBuildNumber == 18362 ? WINVER_10_1903_19H1 : WINVER_10_1909_19H2;
+                pData->KExecOpt = 0x1C3;
+                pData->Protection = 0x6FA;
+                pData->EProcessFlags2 = 0x850;
+                pData->ObjTable = 0x418;
+                pData->VadRoot = 0x658;
+                pData->NtCreateThdExIndex = 0xBD;
+                pData->NtTermThdIndex = 0x53;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x710;
+                pData->MiAllocPage = 0;
+                if (NT_SUCCESS(BBScanSection("PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable)))
+                    pData->ExRemoveTable -= 0x34;
                 break;
-
-                // Windows 10, build 16299/15063/14393/10586
-            case WINVER_10:
-                if (verInfo.dwBuildNumber == 10586)
-                {
-                    pData->KExecOpt           = 0x1BF;
-                    pData->Protection         = 0x6B2;
-                    pData->EProcessFlags2     = 0x300;
-                    pData->ObjTable           = 0x418;
-                    pData->VadRoot            = 0x610;
-                    pData->NtCreateThdExIndex = 0xB4;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->PrevMode           = 0x232;
-                    pData->ExitStatus         = 0x6E0;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x8D\x7D\x18\x48\x8B", 0xCC, 6, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x5C;
-                    break;
-                }
-                else if (verInfo.dwBuildNumber == 14393)
-                {
-                    pData->ver                = WINVER_10_RS1;
-                    pData->KExecOpt           = 0x1BF;
-                    pData->Protection         = pData->buildNo >= 447 ? 0x6CA : 0x6C2;
-                    pData->EProcessFlags2     = 0x300;
-                    pData->ObjTable           = 0x418;
-                    pData->VadRoot            = 0x620;
-                    pData->NtCreateThdExIndex = 0xB6;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->PrevMode           = 0x232;
-                    pData->ExitStatus         = 0x6F0;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x8D\x7D\x18\x48\x8B", 0xCC, 6, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x60;
-                    break;
-                }
-                else if (verInfo.dwBuildNumber == 15063)
-                {
-                    pData->ver                = WINVER_10_RS2;
-                    pData->KExecOpt           = 0x1BF;
-                    pData->Protection         = 0x6CA;
-                    pData->EProcessFlags2     = 0x300;
-                    pData->ObjTable           = 0x418;
-                    pData->VadRoot            = 0x628;
-                    pData->NtCreateThdExIndex = 0xB9;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->PrevMode           = 0x232;
-                    pData->ExitStatus         = 0x6F8;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x8B\x47\x20\x48\x83\xC7\x18", 0xCC, 8, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x34;
-                    break;
-                }
-                else if (verInfo.dwBuildNumber == 16299)
-                {
-                    pData->ver                = WINVER_10_RS3;
-                    pData->KExecOpt           = 0x1BF;
-                    pData->Protection         = 0x6CA;
-                    pData->EProcessFlags2     = 0x828;    // MitigationFlags offset
-                    pData->ObjTable           = 0x418;
-                    pData->VadRoot            = 0x628;
-                    pData->NtCreateThdExIndex = 0xBA;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->PrevMode           = 0x232;
-                    pData->ExitStatus         = 0x700;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x34;
-                    break;
-                }
-                else if (verInfo.dwBuildNumber == 17134)
-                {
-                    pData->ver                = WINVER_10_RS4;
-                    pData->KExecOpt           = 0x1BF;
-                    pData->Protection         = 0x6CA;
-                    pData->EProcessFlags2     = 0x828;    // MitigationFlags offset
-                    pData->ObjTable           = 0x418;
-                    pData->VadRoot            = 0x628;
-                    pData->NtCreateThdExIndex = 0xBB;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->PrevMode           = 0x232;
-                    pData->ExitStatus         = 0x700;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x34;
-                    break;
-                }
-                else if (verInfo.dwBuildNumber == 17763)
-                {
-                    pData->ver                = WINVER_10_RS5;
-                    pData->KExecOpt           = 0x1BF;
-                    pData->Protection         = 0x6CA;
-                    pData->EProcessFlags2     = 0x820;    // MitigationFlags offset
-                    pData->ObjTable           = 0x418;
-                    pData->VadRoot            = 0x628;
-                    pData->NtCreateThdExIndex = 0xBC;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->PrevMode           = 0x232;
-                    pData->ExitStatus         = 0x700;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x34;
-                    break;
-                }
-                else if (verInfo.dwBuildNumber == 18362 || verInfo.dwBuildNumber == 18363)
-                {
-                    pData->ver                = verInfo.dwBuildNumber == 18362 ? WINVER_10_19H1 : WINVER_10_19H2;
-                    pData->KExecOpt           = 0x1C3;
-                    pData->Protection         = 0x6FA;
-                    pData->EProcessFlags2     = 0x850;    // MitigationFlags offset
-                    pData->ObjTable           = 0x418;
-                    pData->VadRoot            = 0x658;
-                    pData->NtCreateThdExIndex = 0xBD;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->PrevMode           = 0x232;
-                    pData->ExitStatus         = 0x710;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x34;
-                    break;
-                }
-                else if (verInfo.dwBuildNumber == 19041)
-                {
-                    pData->ver                = WINVER_10_20H1;
-                    // KP
-                    pData->KExecOpt           = 0x283;
-                    // EP
-                    pData->Protection         = 0x87A;
-                    pData->EProcessFlags2     = 0x9D4;    // MitigationFlags offset
-                    pData->ObjTable           = 0x570;
-                    pData->VadRoot            = 0x7D8;
-                    // KT
-                    pData->PrevMode           = 0x232;
-                    // ET
-                    pData->ExitStatus         = 0x548;
-                    // SSDT
-                    pData->NtCreateThdExIndex = 0xC1;
-                    pData->NtTermThdIndex     = 0x53;
-                    pData->MiAllocPage        = 0;
-                    if (NT_SUCCESS( BBScanSection( "PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable ) ))
-                        pData->ExRemoveTable -= 0x34;
-                    break;
-                }
-                else
-                {
-                    return STATUS_NOT_SUPPORTED;
-                }
-            default:
+            }
+            else if (verInfo.dwBuildNumber == 19041)
+            {
+                pData->ver = WINVER_10_2004_20H1;
+                pData->KExecOpt = 0x283;
+                pData->Protection = 0x87A;
+                pData->EProcessFlags2 = 0x9D4;
+                pData->ObjTable = 0x570;
+                pData->VadRoot = 0x7D8;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x548;
+                pData->NtCreateThdExIndex = 0xC1;
+                pData->NtTermThdIndex = 0x53;
+                pData->MiAllocPage = 0;
+                if (NT_SUCCESS(BBScanSection("PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable)))
+                    pData->ExRemoveTable -= 0x34;
                 break;
+            }
+            else if (verInfo.dwBuildNumber == 19042)
+            {
+                pData->ver = WINVER_10_2009_20H2;
+                pData->KExecOpt = 0x283;
+                pData->Protection = 0x87A;
+                pData->EProcessFlags2 = 0x9D4;
+                pData->ObjTable = 0x570;
+                pData->VadRoot = 0x7D8;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x548;
+                pData->NtCreateThdExIndex = 0xC1;
+                pData->NtTermThdIndex = 0x53;
+                pData->MiAllocPage = 0;
+                if (NT_SUCCESS(BBScanSection("PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable)))
+                    pData->ExRemoveTable -= 0x34;
+                break;
+            }
+            else if (verInfo.dwBuildNumber == 19043)
+            {
+                pData->ver = WINVER_10_2104_21H1;
+                pData->KExecOpt = 0x283;
+                pData->Protection = 0x87A;
+                pData->EProcessFlags2 = 0x9D4;
+                pData->ObjTable = 0x570;
+                pData->VadRoot = 0x7D8;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x548;
+                pData->NtCreateThdExIndex = 0xC1;
+                pData->NtTermThdIndex = 0x53;
+                pData->MiAllocPage = 0;
+                if (NT_SUCCESS(BBScanSection("PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable)))
+                    pData->ExRemoveTable -= 0x34;
+                break;
+            }
+            else if (verInfo.dwBuildNumber == 22000)
+            {
+                pData->ver = WINVER_11_2109_21H2;
+                pData->KExecOpt = 0x283;
+                pData->Protection = 0x87a;
+                pData->EProcessFlags2 = 0x9D4;
+                pData->ObjTable = 0x570;
+                pData->VadRoot = 0x7D8;
+                pData->PrevMode = 0x232;
+                pData->ExitStatus = 0x598;
+                pData->NtCreateThdExIndex = 0xC1;
+                pData->NtTermThdIndex = 0x53;
+                pData->MiAllocPage = 0;
+                if (NT_SUCCESS(BBScanSection("PAGE", (PCUCHAR)"\x48\x83\xC7\x18\x48\x8B\x17", 0xCC, 7, (PVOID)&pData->ExRemoveTable)))
+                    pData->ExRemoveTable -= 0x34;
+                break;
+            }
+            else
+            {
+                return STATUS_NOT_SUPPORTED;
+            }
+        default:
+            break;
         }
 
         if (pData->ExRemoveTable != 0)
@@ -499,7 +411,7 @@ NTSTATUS BBInitDynamicData( IN OUT PDYNAMIC_DATA pData )
             pData->ExRemoveTable != 0 ? "SUCCESS" : "FAIL" 
             );
 
-        if (pData->ver >= WINVER_10_RS1)
+        if (pData->ver >= WINVER_10_1803_RS4)
         {
             DPRINT( 
                 "BlackBone: %s: g_KdBlock->KernBase: %p, GetKernelBase() = 0x%p \n", 

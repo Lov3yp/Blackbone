@@ -4,7 +4,7 @@
 
 ## Features
 
-- **x86 and x64 support**
+- **Windows 10 (RS4/RS5/19H1/19H2/20H1/20H2/21H1) and Windows 11 (21H2) x64 support**
 
 **Process interaction**
  - Manage PEB32/PEB64

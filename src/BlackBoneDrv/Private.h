@@ -152,19 +152,14 @@ typedef PULONG PWIN32_PROTECTION_MASK;
 
 typedef enum _WinVer
 {
-    WINVER_7      = 0x0610,
-    WINVER_7_SP1  = 0x0611,
-    WINVER_8      = 0x0620,
-    WINVER_81     = 0x0630,
-    WINVER_10     = 0x0A00,
-    WINVER_10_RS1 = 0x0A01, // Anniversary update
-    WINVER_10_RS2 = 0x0A02, // Creators update
-    WINVER_10_RS3 = 0x0A03, // Fall creators update
-    WINVER_10_RS4 = 0x0A04, // Spring creators update
-    WINVER_10_RS5 = 0x0A05, // October 2018 update
-    WINVER_10_19H1 = 0x0A06, // May 2019 update 19H1
-    WINVER_10_19H2 = 0x0A07, // November 2019 update 19H2
-    WINVER_10_20H1 = 0x0A08, // April 2020 update 20H1
+    WINVER_10_1803_RS4 = 0x0A05,
+    WINVER_10_1809_RS5 = 0x0A06,
+    WINVER_10_1903_19H1 = 0x0A07,
+    WINVER_10_1909_19H2 = 0x0A08,
+    WINVER_10_2004_20H1 = 0x0A09,
+    WINVER_10_2009_20H2 = 0x0A0A,
+    WINVER_10_2104_21H1 = 0x0A0B,
+    WINVER_11_2109_21H2 = 0x0A0C,
 } WinVer;
 
 extern PLIST_ENTRY PsLoadedModuleList;
